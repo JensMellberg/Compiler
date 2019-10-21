@@ -1,0 +1,107 @@
+%class "LangParser";
+%package "lang.ast";
+
+%embed {:
+	static public class SyntaxError extends RuntimeException { public SyntaxError(String msg) {super(msg);}}
+	// Disable syntax error recovery
+	protected void recoverFromError(Symbol token, TokenStream in) {
+		throw new SyntaxError("Cannot recover from the syntax error");
+	}
+:};
+
+%terminals ID;
+/* %terminals ID, INT, LPAR, RPAR, LBLOCK, RBLOCK, ASSIGN, SEMICOL, NUMERAL, ADD, SUB, MUL, CMA, DIV, MOD, EQ, NEQ, LEQ, GEQ, GTR, LSS, COMM, IF, ELSE, WHILE, RETURN; */
+%typeof program = "Program";
+%typeof funcdecl = "FuncDecl";
+%typeof funccall = "FuncCall";
+%typeof funcdecl_list = "List";
+%typeof stmt_list = "List";
+%typeof numeral = "Numeral";
+%typeof id_use = "IdUse";
+%typeof id_decl = "IdDecl";
+%typeof id_realdecl = "IdReadDecl";
+%typeof assign = "Assign";
+%typeof block = "Block";
+%typeof expr = "Expr";
+%typeof term = "Expr";
+%typeof factor = "Expr";
+%typeof stmt = "Stmt";
+%typeof comp = "Expr";
+%typeof if = "If";
+%typeof while = "While";
+%typeof opt_else = "Opt";
+%typeof return = "Return";
+%typeof funcstmt = "FuncStmt";
+%typeof funccall = "FuncCall";
+%typeof param_list = "List";
+
+
+%goal program;
+
+funcstmt = funccall.a SEMICOL {: return new FuncStmt(a); :};
+
+funccall = id_use.a LPAR param_list.b RPAR { : return new FuncCall(a,b); :};
+
+if = IF LPAR expr.a RPAR block.b opt_else.c {: return new If(a,b,c); :};
+
+while = WHILE LPAR expr.a RPAR block.b {: return new While(a,b); :};
+
+opt_else = ELSE block.a {: return new Opt(a); :}
+		| /* epsilon */ {: return new Opt(); :};
+
+id_use = ID.a {: return new IdUse(a); :};
+
+id_decl = ID.a {: return new IdDecl(a); :};
+
+return = RETURN expr.a SEMICOL {: return new Return(a); :};
+
+assign = id_use.a ASSIGN expr.b {: return new Assign(a,b); :};
+
+id_realdecl = INT id_decl.a SEMICOL {: return new IdReadDecl(a); :};
+
+expr = comp.a EQ comp.b {: return new Eq(a,b); :} |
+ 			comp.a GEQ comp.b {: return new Geq(a,b); :} |
+			comp.a LEQ comp.b {: return new Leq(a,b); :} |
+			comp.a NEQ comp.b {: return new Neq(a,b); :} |
+			comp.a LSS comp.b {: return new Lss(a,b); :} |
+			comp.a GTR comp.b {: return new Gtr(a,b); :} |
+			comp;
+
+comp = assign | term
+	| comp.a ADD term.b {: return new Add(a,b); :}
+	| comp.a SUB term.b {: return new Sub(a,b); :};
+
+/*
+expr = assign | term
+	| expr.a ADD term.b {: return new Add(a,b); :}
+	| expr.a SUB term.b {: return new Sub(a,b); :};
+*/
+
+term = factor | term.a MUL factor.b {:return new Mul(a,b); :}
+	| term.a DIV factor.b {:return new Div(a,b); :}
+	 | term.a MOD factor.b {:return new Mod(a,b); :} ;
+
+factor = id_use | numeral | LPAR expr.a RPAR {: return a; :};
+
+
+numeral = NUMERAL.a {:return new Numeral(a); :};
+
+program = funcdecl_list.a {: return new Program(a); :} ;
+
+funcdecl = INT id_decl.a LPAR RPAR block.b {: return new FuncDecl(a,b); :} ;
+
+block = LBLOCK stmt_list.a  RBLOCK{: return new Block(a); :};
+
+stmt = id_realdecl | assign.a SEMICOL {: return a; :} | if | while | return | funcstmt;
+
+param_list = /* epsilon */
+			| expr.a {: return new List().add(a); :}
+			| param_list.a CMA expr.b {: return a.add(b); :};
+
+stmt_list = /* epsilon */
+			| stmt.a {: return new List().add(a); :}
+			| stmt_list.a stmt.b {: return a.add(b); :};
+
+funcdecl_list = /* epsilon */
+			| funcdecl.a {: return new List().add(a); :}
+			| funcdecl_list.a funcdecl.b {: return a.add(b); :};

@@ -1,0 +1,43 @@
+Program ::= FuncDecl*;
+
+abstract Expr;
+abstract Stmt;
+
+
+MyList : Expr ::= Expr*;
+Assign : Stmt ::= IdUse Expr;
+If : Stmt ::= Expr First:Block [Second:Block];
+While : Stmt ::= Expr Block;
+Return : Stmt ::= Expr;
+FuncStmt : Stmt ::= FuncCall;
+FuncCall : Expr ::= IdUse Expr*;
+Add : Expr ::= Left:Expr Right:Expr;
+Sub : Expr ::= Left:Expr Right:Expr;
+Mul : Expr ::= Left:Expr Right:Expr;
+Div : Expr ::= Left:Expr Right:Expr;
+Mod : Expr ::= Left:Expr Right:Expr;
+Eq : Expr ::= Left:Expr Right:Expr;
+Geq : Expr ::= Left:Expr Right:Expr;
+Leq : Expr ::= Left:Expr Right:Expr;
+Neq : Expr ::= Left:Expr Right:Expr;
+Lss : Expr ::= Left:Expr Right:Expr;
+Gtr : Expr ::= Left:Expr Right:Expr;
+NegativeExpr : Expr ::= Expr;
+abstract IdDeclaration : Stmt;
+ListDeclaration : IdDeclaration ::= IdDecl [MyList];
+IdReadDecl : IdDeclaration ::= IdDecl [Expr];
+IdParam ::= IdDecl;
+FuncDecl ::= IdDecl IdParam* Block;
+UnknownDecl : IdDecl;
+Numeral : Expr ::= <NUMERAL>;
+IdUse : Expr ::= <ID>;
+IdDecl ::= <ID>;
+Block ::= Stmt*;
+ListCall : Expr ::= IdUse Numeral;
+
+
+abstract Type;
+IntType: Type;
+BoolType: Type;
+UnknownType: Type;
+ListType : Type;

@@ -1,0 +1,37 @@
+Program
+  List
+    FuncDecl
+      IdDecl ID="a"
+      List
+      Block
+        List
+          Assign
+            IdUse ID="x"
+            Eq
+              Numeral NUMERAL="2"
+              Add
+                Numeral NUMERAL="1"
+                Numeral NUMERAL="1"
+          Assign
+            IdUse ID="x"
+            Mul
+              Eq
+                Numeral NUMERAL="1"
+                Numeral NUMERAL="1"
+              Numeral NUMERAL="2"
+          Assign
+            IdUse ID="x"
+            Eq
+              Eq
+                Numeral NUMERAL="1"
+                Numeral NUMERAL="2"
+              Numeral NUMERAL="5"
+          Assign
+            IdUse ID="x"
+            Add
+              Gtr
+                Numeral NUMERAL="5"
+                Numeral NUMERAL="2"
+              Lss
+                Numeral NUMERAL="2"
+                Numeral NUMERAL="5"

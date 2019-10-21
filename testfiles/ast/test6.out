@@ -1,0 +1,97 @@
+Program
+  List
+    FuncDecl
+      IdDecl ID="gcd1"
+      List
+        IdParam
+          IdDecl ID="a"
+        IdParam
+          IdDecl ID="b"
+      Block
+        List
+          While
+            Neq
+              IdUse ID="a"
+              IdUse ID="b"
+            Block
+              List
+                If
+                  Gtr
+                    IdUse ID="a"
+                    IdUse ID="b"
+                  Block
+                    List
+                      Assign
+                        IdUse ID="a"
+                        Sub
+                          IdUse ID="a"
+                          IdUse ID="b"
+                  Opt
+                    Block
+                      List
+                        Assign
+                          IdUse ID="b"
+                          Sub
+                            IdUse ID="b"
+                            IdUse ID="a"
+          Return
+            IdUse ID="a"
+    FuncDecl
+      IdDecl ID="gcd2"
+      List
+        IdParam
+          IdDecl ID="a"
+        IdParam
+          IdDecl ID="b"
+      Block
+        List
+          If
+            Eq
+              IdUse ID="b"
+              Numeral NUMERAL="0"
+            Block
+              List
+                Return
+                  IdUse ID="a"
+            Opt
+          Return
+            FuncCall
+              IdUse ID="gcd2"
+              List
+                IdUse ID="b"
+                Mod
+                  IdUse ID="a"
+                  IdUse ID="b"
+    FuncDecl
+      IdDecl ID="main"
+      List
+      Block
+        List
+          IdReadDecl
+            IdDecl ID="a"
+            Opt
+          IdReadDecl
+            IdDecl ID="b"
+            Opt
+          Assign
+            IdUse ID="a"
+            Numeral NUMERAL="5"
+          Assign
+            IdUse ID="b"
+            Numeral NUMERAL="60"
+          IdReadDecl
+            IdDecl ID="diff"
+            Opt
+              Sub
+                FuncCall
+                  IdUse ID="gcd1"
+                  List
+                    IdUse ID="a"
+                    IdUse ID="b"
+                FuncCall
+                  IdUse ID="gcd2"
+                  List
+                    IdUse ID="a"
+                    IdUse ID="b"
+          Return
+            Numeral NUMERAL="0"

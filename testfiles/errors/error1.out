@@ -1,0 +1,3 @@
+Error at line 2: symbol 'a' is not declared
+Error at line 3: the definition of symbol 'b' is circular
+Error at line 5: symbol 'c' is already declared!

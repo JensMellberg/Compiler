@@ -1,0 +1,21 @@
+int main() {
+  if (1 == 2) {
+   int a = 1;
+  }
+  else {
+    int b = 2;
+  }
+
+  if (1 == 1) {
+   int c = 1;
+  }
+  else {
+    int d = 2;
+  }
+
+  int e;
+  while (e == 0) {
+    e = e + 5;
+    print(e);
+  }
+}

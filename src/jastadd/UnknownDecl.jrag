@@ -1,0 +1,28 @@
+aspect UnknownDecl {
+	syn nta UnknownDecl  Program.unknownDecl() = new UnknownDecl("<unknown>");
+
+	inh UnknownDecl ASTNode.unknownDecl();
+	eq Program.getChild().unknownDecl() = unknownDecl();
+
+	syn boolean IdDecl.isUnknown() = false;
+	eq UnknownDecl.isUnknown() = true;
+}
+
+aspect Type {
+	syn nta IntType Program.intType() = new IntType();
+	syn nta BoolType Program.boolType() = new BoolType();
+	syn nta ListType Program.listType() = new ListType();
+	syn nta UnknownType Program.unknownType() = new UnknownType();
+
+
+	inh IntType ASTNode.intType();
+	inh BoolType ASTNode.boolType();
+	inh ListType ASTNode.listType();
+	inh UnknownType ASTNode.unknownType();
+
+	eq Program.getChild().intType() = intType();
+	eq Program.getChild().listType() = listType();
+	eq Program.getChild().boolType() = boolType();
+	eq Program.getChild().unknownType() = unknownType();
+
+}

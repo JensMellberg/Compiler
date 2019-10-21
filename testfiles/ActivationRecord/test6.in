@@ -1,0 +1,15 @@
+int f(int i){
+  if (i == 0){
+    return 0;
+  }
+  i= i-1;
+  return a(i);
+}
+
+int a(int i){
+  return f(i);
+}
+
+int main() {
+  f(5);
+}

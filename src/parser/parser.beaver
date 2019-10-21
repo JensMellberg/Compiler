@@ -1,0 +1,142 @@
+%class "LangParser";
+%package "lang.ast";
+
+%embed {:
+	static public class SyntaxError extends RuntimeException { public SyntaxError(String msg) {super(msg);}}
+	// Disable syntax error recovery
+	protected void recoverFromError(Symbol token, TokenStream in) {
+		throw new SyntaxError("Cannot recover from the syntax error");
+	}
+:};
+
+%terminals RBRACK, LBRACK, LIST, ID, IF, ELSE, WHILE, RETURN, INT, LPAR, RPAR, LBLOCK, RBLOCK, ASSIGN, CMA, SEMICOL, ADD, SUB, MUL, DIV, MOD, LSS, GTR, LEQ, GEQ, EQ, NEQ, NUMERAL  ;
+
+%typeof program = "Program";
+%typeof funcdecl = "FuncDecl";
+%typeof funcdecl_list = "List";
+%typeof stmt_list = "List";
+%typeof numeral = "Numeral";
+%typeof id_use = "IdUse";
+%typeof id_decl = "IdDecl";
+%typeof id_realdecl = "IdReadDecl";
+%typeof id_declaration = "IdDeclaration";
+%typeof id_realdecl = "IdReadDecl";
+%typeof listdecl = "ListDeclaration";
+%typeof assign = "Assign";
+%typeof block = "Block";
+%typeof expr = "Expr";
+%typeof term = "Expr";
+%typeof factor = "Expr";
+%typeof stmt = "Stmt";
+%typeof comp = "Expr";
+%typeof if = "If";
+%typeof while = "While";
+%typeof opt_else = "Opt";
+%typeof return = "Return";
+%typeof funcstmt = "FuncStmt";
+%typeof funccall = "FuncCall";
+%typeof param_list = "List";
+%typeof arg_list = "List";
+%typeof opt_stmt_list = "List";
+%typeof opt_param_list = "List";
+%typeof opt_arg_list = "List";
+%typeof opt_assign = "Opt";
+%typeof opt_list_assign = "Opt";
+%typeof negative_expr = "NegativeExpr";
+%typeof id_param = "IdParam";
+%typeof list = "MyList";
+%typeof listcall = "ListCall";
+
+
+%goal program;
+
+list = LPAR opt_arg_list.a RPAR {: return new MyList(a); :};
+
+listcall = id_use.a LBRACK numeral.b RBRACK {: return new ListCall(a, b); :};
+
+funcstmt = funccall.a SEMICOL {: return new FuncStmt(a); :};
+
+funccall = id_use.a LPAR opt_arg_list.b RPAR {: return new FuncCall(a,b); :};
+
+if = IF LPAR expr.a RPAR block.b opt_else.c {: return new If(a,b,c); :};
+
+while = WHILE LPAR expr.a RPAR block.b {: return new While(a,b); :};
+
+opt_else = ELSE block.a {: return new Opt(a); :}
+		|   {: return new Opt(); :};
+
+id_use = ID.a {: return new IdUse(a); :};
+
+id_decl = ID.a {: return new IdDecl(a); :};
+
+id_param = INT id_decl.a {: return new IdParam(a); :};
+
+return = RETURN expr.a SEMICOL {: return new Return(a); :};
+
+assign = id_use.a ASSIGN expr.b {: return new Assign(a,b); :};
+
+
+
+opt_assign = ASSIGN expr.a {: return new Opt(a); :}
+ 				| {: return new Opt(); :};
+
+opt_list_assign = ASSIGN list.a {: return new Opt(a); :}
+				 	| {: return new Opt(); :};
+
+negative_expr = SUB factor.a {: return new NegativeExpr(a); :};
+
+expr = comp.a EQ comp.b {: return new Eq(a,b); :} |
+ 			comp.a GEQ comp.b {: return new Geq(a,b); :} |
+			comp.a LEQ comp.b {: return new Leq(a,b); :} |
+			comp.a NEQ comp.b {: return new Neq(a,b); :} |
+			comp.a LSS comp.b {: return new Lss(a,b); :} |
+			comp.a GTR comp.b {: return new Gtr(a,b); :} |
+			comp ;
+
+comp = term
+	| comp.a ADD term.b {: return new Add(a,b); :}
+	| comp.a SUB term.b {: return new Sub(a,b); :};
+
+
+term = factor | term.a MUL factor.b {:return new Mul(a,b); :}
+	| term.a DIV factor.b {:return new Div(a,b); :}
+	 | term.a MOD factor.b {:return new Mod(a,b); :} ;
+
+factor = list | negative_expr|listcall | funccall | id_use | numeral | LPAR expr.a RPAR {: return a; :};
+
+numeral = NUMERAL.a {:return new Numeral(a); :};
+
+program = {: return new Program(new List()); :}| funcdecl_list.a {: return new Program(a); :} ;
+
+funcdecl = INT id_decl.a LPAR opt_param_list.b RPAR block.c {: return new FuncDecl(a,b,c); :} ;
+
+opt_param_list = param_list | {: return new List(); :};
+
+opt_arg_list = arg_list | {: return new List(); :};
+
+block = LBLOCK opt_stmt_list.a  RBLOCK{: return new Block(a); :};
+
+opt_stmt_list = stmt_list | {: return new List(); :};
+
+id_declaration = id_realdecl
+ | listdecl;
+
+listdecl = LIST id_decl.a opt_list_assign.b {: return new ListDeclaration(a,b); :};
+id_realdecl = INT id_decl.a opt_assign.b {: return new IdReadDecl(a,b); :};
+
+stmt = id_declaration.a SEMICOL {: return a; :} | assign.a SEMICOL {: return a; :} | if | while | return | funcstmt;
+
+param_list =  id_param.a {: return new List().add(a); :}
+			| param_list.a CMA id_param.b {: return a.add(b); :};
+
+arg_list =  expr.a {: return new List().add(a); :}
+			| arg_list.a CMA expr.b {: return a.add(b); :};
+
+
+stmt_list =
+ 			stmt.a {: return new List().add(a); :}
+			| stmt_list.a stmt.b {: return a.add(b); :};
+
+funcdecl_list =
+        funcdecl.a {: return new List().add(a); :}
+			| funcdecl_list.a funcdecl.b {: return a.add(b); :};

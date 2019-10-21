@@ -1,0 +1,162 @@
+aspect NameAnalysis {
+	syn IdDecl IdUse.decl() = lookup(getID());
+	inh IdDecl IdUse.lookup(String name);
+	inh IdDecl FuncDecl.lookup(String name);
+
+	syn nta List<FuncDecl> Program.predefinedFunctions() {
+		List<FuncDecl> list = new List<FuncDecl>();
+		list.add(new FuncDecl(new IdDecl("read"), new List<IdParam>(), new Block(new List<Stmt>())));
+		List<IdParam> params = new List<IdParam>();
+		params.add(new IdParam(new IdDecl("data")));
+		list.add(new FuncDecl(new IdDecl("print"), params, new Block(new List<Stmt>())));
+		return list;
+	}
+
+	syn String IdDecl.getUniqueID() {
+		return getPrefix() + getID();
+	}
+
+	inh String IdDecl.getPrefix();
+	inh String Block.getPrefix();
+
+	eq Block.getStmt(int index).getPrefix() {
+		return getPrefix() + index + "_" ;
+	}
+	inh String Stmt.getLabel();
+	inh String Block.getLabel();
+	eq Block.getStmt(int index).getLabel() {
+		return getLabel() + index + "_" ;
+	}
+	eq Program.getFuncDecl(int index).getLabel() {
+		return getFuncDecl(index).getIdDecl().getID()+"_";
+	}
+
+	eq Program.getChild().getPrefix() = "";
+
+
+	syn IdDecl Program.lookup(String name) {
+		for (FuncDecl f : getFuncDecls()) {
+			if (f.getIdDecl().getID().equals(name))
+				return f.getIdDecl();
+		}
+		for (FuncDecl f : predefinedFunctions()) {
+			if (f.getIdDecl().getID().equals(name))
+				return f.getIdDecl();
+		}
+		return unknownDecl();
+	}
+
+	eq Program.getFuncDecl(int index).lookup(String name) {
+		IdDecl decl = getFuncDecl(index).localLookup(name);
+		return !decl.isUnknown() ? decl : lookup(name);
+	}
+
+
+	syn IdDecl FuncDecl.localLookup(String name) {
+		for (IdParam p : getIdParams()) {
+			if (p.getIdDecl().getID().equals(name))
+				return p.getIdDecl();
+		}
+		return unknownDecl();
+	}
+
+	inh IdDecl Block.lookup(String name);
+
+	syn IdDecl Block.localLookup(String name, int until) {
+		for (int i = 0; i <= until; i++) {
+			if (getStmt(i) instanceof IdReadDecl && ((IdReadDecl)getStmt(i)).getIdDecl().getID().equals(name)) {
+				return ((IdReadDecl)getStmt(i)).getIdDecl();
+			}
+			if (getStmt(i) instanceof ListDeclaration && ((ListDeclaration)getStmt(i)).getIdDecl().getID().equals(name)) {
+				return ((ListDeclaration)getStmt(i)).getIdDecl();
+			}
+		}
+		return unknownDecl();
+	}
+
+	eq Block.getStmt(int index).lookup(String name) {
+		IdDecl decl = localLookup(name, index);
+		return !decl.isUnknown() ? decl : lookup(name);
+	}
+	eq FuncDecl.getIdDecl().isFunction() = true;
+	eq FuncDecl.getIdDecl().function() = this;
+
+	eq FuncCall.getIdUse().isFunction() = true;
+
+	eq Program.getChild().isFunction() = false;
+	inh FuncDecl IdDecl.function();
+	eq Program.getChild().function() = null;
+
+	inh IdDecl IdDecl.lookup(String name);
+	inh boolean IdDecl.isFunction();
+	syn boolean IdDecl.isVariable() = !isFunction();
+	inh boolean IdUse.isFunction();
+	syn boolean IdUse.isVariable() = !isFunction();
+	syn boolean IdDecl.isMultiDeclared() = lookup(getID()) != this;
+
+	syn boolean FuncCall.argNbrMismatch() {
+		int args = getNumExpr();
+		FuncDecl func = getIdUse().decl().function();
+		if (func == null)
+			return false;
+		int params = func.getNumIdParam();
+		return args != params;
+	}
+
+	inh Type IdDecl.getType();
+	eq IdReadDecl.getIdDecl().getType() = intType();
+	eq ListDeclaration.getIdDecl().getType() = listType();
+	syn Type Expr.getType() {
+		if(this instanceof Eq || this instanceof Neq || this instanceof Geq || this instanceof Leq || this instanceof Lss || this instanceof Gtr){
+			return boolType();
+		} else if (this instanceof MyList){
+			return listType();
+		} else {
+				return intType();
+		}
+	}
+	syn Type Geq.getType() {
+		return boolType();
+	}
+	syn Type UnknownDecl.getType() = unknownType();
+
+	inh Type Expr.expectedType();
+	eq If.getExpr().expectedType() = boolType();
+	eq Expr.getChild().expectedType() = intType();
+	eq While.getExpr().expectedType() = boolType();
+	eq Program.getChild().expectedType() = intType();
+	eq Assign.getExpr().expectedType() = getIdUse().decl().getType();
+	eq ListDeclaration.getMyList().expectedType() = listType();
+
+	syn boolean Type.compatibleType(Type t){
+		if(t.getClass().isInstance(this) || t instanceof UnknownType || this instanceof UnknownType ){
+			return true;
+		}
+		return false;
+	}
+
+	inh boolean IdDecl.isParam();
+
+	eq IdParam.getIdDecl().isParam(){
+		return true;
+	}
+
+	eq Program.getChild().isParam() = false;
+
+	inh int IdDecl.getParamIndex();
+
+	eq FuncDecl.getIdParam(int index).getParamIndex() = index;
+
+	eq Program.getChild().getParamIndex() = -1;
+
+}
+
+aspect CircularDefinitions {
+	/* Identify circular definitions in let expressions */
+	syn boolean IdUse.isCircular() = inExprOf(decl());
+	inh boolean IdUse.inExprOf(IdDecl decl);
+	eq IdReadDecl.getExpr().inExprOf(IdDecl decl){
+			return getIdDecl() == decl;
+	}
+	eq Program.getChild().inExprOf(IdDecl decl) = false;
+}

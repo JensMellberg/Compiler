@@ -1,0 +1,12 @@
+int a(int e) {
+  int b = b + 2;
+  int c = a + 2;
+  b();
+  c = a(5);
+  c = a(2,5);
+
+  print(5);
+  print();
+  read();
+  read(5);
+}

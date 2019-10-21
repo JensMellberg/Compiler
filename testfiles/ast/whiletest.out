@@ -1,0 +1,16 @@
+Program
+  List
+    FuncDecl
+      IdDecl ID="a"
+      List
+      Block
+        List
+          While
+            IdUse ID="x"
+            Block
+              List
+                Assign
+                  IdUse ID="x"
+                  Add
+                    IdUse ID="x"
+                    Numeral NUMERAL="1"

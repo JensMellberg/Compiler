@@ -1,0 +1,6 @@
+Error at line 2: the definition of symbol 'b' is circular
+Error at line 3: symbol 'a' is a function but used as a variable
+Error at line 4: symbol 'b' is a variable but used as a function
+Error at line 6: The number of arguments given to 'a' does not match its parameters
+Error at line 9: The number of arguments given to 'print' does not match its parameters
+Error at line 11: The number of arguments given to 'read' does not match its parameters

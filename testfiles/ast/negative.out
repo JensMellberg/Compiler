@@ -1,0 +1,10 @@
+Program
+  List
+    FuncDecl
+      IdDecl ID="a"
+      List
+      Block
+        List
+          Return
+            NegativeExpr
+              Numeral NUMERAL="5"

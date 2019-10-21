@@ -1,0 +1,40 @@
+
+aspect FunctionCalls {
+public class FuncDeclComp implements Comparable<FuncDeclComp> {
+  public FuncDeclComp(FuncDecl decl) {
+  funcDecl = decl;
+  }
+  public FuncDecl funcDecl;
+  public int compareTo(FuncDeclComp other) {
+    return funcDecl.getIdDecl().getID().compareTo(other.funcDecl.getIdDecl().getID());
+  }
+  public String toString() {
+    return funcDecl.getIdDecl().getID();
+  }
+}
+
+syn Set<FuncDeclComp> FuncDecl.reachable() circular [new TreeSet<FuncDeclComp>()];
+eq FuncDecl.reachable() {
+  Set<FuncDeclComp> s = new TreeSet<FuncDeclComp>();
+  Set<FuncDeclComp> calls = functionCalls();
+  s.addAll(calls);
+  for(FuncDeclComp func : calls ){
+    s.addAll(func.funcDecl.reachable());
+  }
+  return s;
+}
+
+coll Set<FuncDeclComp> FuncDecl.functionCalls() [new TreeSet<FuncDeclComp>()] with add root Program;
+
+FuncCall contributes new FuncDeclComp(getIdUse().decl().function())
+  when 1 == 1
+  to FuncDecl.functionCalls() for enclosingFunction();
+
+inh FuncDecl FuncCall.enclosingFunction();
+
+eq Program.getFuncDecl(int index).enclosingFunction(){
+  return getFuncDecl(index);
+}
+
+
+}

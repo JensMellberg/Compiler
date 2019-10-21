@@ -1,0 +1,13 @@
+Program
+  List
+    FuncDecl
+      IdDecl ID="a"
+      List
+        IdReadDecl
+          IdDecl ID="b"
+          Opt
+        IdReadDecl
+          IdDecl ID="c"
+          Opt
+      Block
+        List
